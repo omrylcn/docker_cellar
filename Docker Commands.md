@@ -66,4 +66,3 @@
 ### REMOVE ALL CONTAINERS
 
 - docker rm $(docker ps -a -q)
-
