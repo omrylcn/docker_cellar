@@ -38,6 +38,12 @@ This repo contains docker works,notes,examples.
 
 - **3-Nginx** (To do)
 
-- **4-Tensorflow_Server** (To do)
+- **4-Tensorflow_Server** : Tensorflow/serving with Docker image example.
+  - **Description**:
+    - It is used fashion mnist data and created a REST API server via docker images.
+    
+  - **Usage**:
+    - Just open notebook file and run cells
+    
 
 - **5-Docker Swarm** (To do)
