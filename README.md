@@ -62,5 +62,7 @@ This repo contains docker works,notes,examples.
       ![results](4-Tensorflow_Server/images/api_trouser.png)
       
       
-
+  - **References**:
+    - https://www.tensorflow.org/tfx/serving/serving_basic
+    
 - **5-Docker Swarm** (To do)
