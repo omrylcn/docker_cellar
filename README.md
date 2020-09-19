@@ -23,7 +23,7 @@ This repo contains docker works,notes,examples.
 - **2-API** : Simple Flask api for image process.
 
   - **Description**:
-    - It convert a rgb image to a grey image like :
+    - It converts a rgb image to a grey image like :
      ![image_converted](2-API/app/project/api_uploaded_files/test_image.jpg)
      ![image_converted](2-API/app/project/api_converted_files/test_image_grey.jpg)
   
