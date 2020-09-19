@@ -46,8 +46,16 @@ This repo contains docker works,notes,examples.
     
   - **Usage**:
   
-    - Just open notebook file and run cells
+    - Just open notebook file and run cells:
     
-
+      - Runnig Docker container
+      
+      ![api_image](4-Tensorflow_Server/images/api_docker.png)
+      
+      - Results
+      
+      ![results](4-Tensorflow_Server/images/api_trouser.png)
+      
+      
 
 - **5-Docker Swarm** (To do)
