@@ -28,21 +28,24 @@ This repo contains docker works,notes,examples.
 
   - **Usage**:
 
-```Bash
+    ```Bash
     - docker build -t {example_image_name} .
     - docker run --rm -it -v "$(pwd)"/app:/app --name test -p 5000:5000 {example_image_name} 
     - localhost:5000/inputs : show input image names
     - localhost:5000/convert : convert input images to grey images
     - localhost:5000/outputs : show grey image names
-```
+    ```
 
 - **3-Nginx** (To do)
 
 - **4-Tensorflow_Server** : Tensorflow/serving with Docker image example.
+
   - **Description**:
+  
     - It is used fashion mnist data and created a REST API server via docker images.
     
   - **Usage**:
+  
     - Just open notebook file and run cells
     
 
