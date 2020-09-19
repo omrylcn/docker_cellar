@@ -94,4 +94,4 @@ docker attach <container_id>|Önceden detached modda -d başlatılan bir Contain
 
 - https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 
--https://stackoverflow.com/questions/35465557/how-to-apply-color-in-markdown/35485694
+- https://stackoverflow.com/questions/35465557/how-to-apply-color-in-markdown/35485694

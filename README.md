@@ -20,7 +20,7 @@ This repo contains docker works,notes,examples.
     - docker run -it --rm -v "$(pwd)"/app:/app/ --name {example_container_name} {example_image_name}
     ```
 
-- **2-API** : Simple Flask api image process.
+- **2-API** : Simple Flask api for image process.
   
   - **Folder**:
   
