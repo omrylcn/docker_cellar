@@ -1,4 +1,4 @@
-# Docker Kaynakları
+# Docker Sources (Turkish + English)
 
 • <https://gokhansengun.com/docker-nedir-nasil-calisir-nerede-kullanilir/>
 
