@@ -20,12 +20,7 @@ This repo contains docker works,notes,examples.
     - docker run -it --rm -v "$(pwd)"/app:/app/ --name {example_container_name} {example_image_name}
     ```
 
-- **2-API** : Simple Flask api for image processing.
-
-  - **Description**:
-    - It converts a rgb image to a grey image like :
-     ![image_converted](2-API/app/project/api_uploaded_files/test_image.jpg)
-     ![image_converted](2-API/app/project/api_converted_files/test_image_grey.jpg)
+- **2-API** : Simple Flask api for image process.
   
   - **Folder**:
   
@@ -48,21 +43,17 @@ This repo contains docker works,notes,examples.
   - **Description**:
   
     - It is used fashion mnist data and created a REST API server via docker images.
-    
+
   - **Usage**:
   
-    - Just open notebook file and run cells:
-    
-      - Runnig Docker container
-      
-      ![api_image](4-Tensorflow_Server/images/api_docker.png)
-      
-      - Results
-      
-      ![results](4-Tensorflow_Server/images/api_trouser.png)
-      
-      
-  - **References**:
-    - https://www.tensorflow.org/tfx/serving/serving_basic
-    
-- **5-Docker Swarm** (To do)
+    - Just open notebook file and run cells
+
+- **5-PostgreSQL_and_pgAdmin**
+  - **Description**:
+    - It is a docker-compose file to run both of them.
+    - If want to custom ports and user, adming, it can be do via compose-file.
+  -
+  - **Usage**:
+    - Go project directory
+    - `docker-compose up`
+    - Run pgAdmin like standart way
