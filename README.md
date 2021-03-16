@@ -51,7 +51,7 @@ This repo contains docker works,notes,examples.
 - **5-PostgreSQL_and_pgAdmin**
   - **Description**:
     - It is a docker-compose file to run both of them.
-    - If want to custom ports and user, adming, it can be do via compose-file.
+    - If want to custom ports and users,paswords, it can be do via compose-file.
   
   - **Usage**:
     - Go project directory
