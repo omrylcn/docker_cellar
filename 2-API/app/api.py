@@ -1,73 +1,196 @@
+"""FastAPI service for image processing with upload/download capabilities."""
+
 import os
 from pathlib import Path
-from flask import Flask, request, abort, jsonify, send_from_directory
-from convert_func import grey_image
+from typing import List
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, status
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+from convert_func import convert_images_to_grayscale
 
 
-MODULE_PATH=Path(__file__).parent
+# Initialize FastAPI app
+app = FastAPI(
+    title="Image Processing API",
+    description="FastAPI service for converting images to grayscale",
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
-UPLOAD_DIRECTORY = "project/api_uploaded_files"
-UPLOAD_DIRECTORY=MODULE_PATH/UPLOAD_DIRECTORY
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-DOWNLOAD_DIRECTORY = "project/api_uploaded_files"
-DOWNLOAD_DIRECTORY = MODULE_PATH/"project/api_converted_files"
+# Directory configuration
+MODULE_PATH = Path(__file__).parent
+UPLOAD_DIRECTORY = MODULE_PATH / "project" / "api_uploaded_files"
+DOWNLOAD_DIRECTORY = MODULE_PATH / "project" / "api_converted_files"
 
-
-os.makedirs(UPLOAD_DIRECTORY,exist_ok=True)
-os.makedirs(DOWNLOAD_DIRECTORY,exist_ok=True)
-
-
-
-api = Flask(__name__)
-
-
-@api.route("/inputs")
-def list_input_files():
-    """Endpoint to list files on the server."""
-    files = []
-    for filename in os.listdir(UPLOAD_DIRECTORY):
-        path = os.path.join(UPLOAD_DIRECTORY, filename)
-        if os.path.isfile(path):
-            files.append(filename)
-    return jsonify(files)
-
-@api.route("/outputs")
-def list_output_files():
-    """Endpoint to list files on the server."""
-    files = []
-    for filename in os.listdir(DOWNLOAD_DIRECTORY):
-        path = os.path.join(DOWNLOAD_DIRECTORY, filename)
-        if os.path.isfile(path):
-            files.append(filename)
-    return jsonify(files)
+# Ensure directories exist
+UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
+DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
-@api.route("/download/<path:path>")
-def get_file(path):
-    """Download a file."""
-    return send_from_directory(DOWNLOAD_DIRECTORY, path, as_attachment=True)
-
-@api.route("/convert")
-def convert_image():
-    """Convert rgb image to grey image"""
-    grey_image(UPLOAD_DIRECTORY,DOWNLOAD_DIRECTORY)
-    return "Converting is done"
+@app.get("/", summary="Health check")
+async def root() -> dict:
+    """Health check endpoint."""
+    return {
+        "message": "Image Processing API is running",
+        "status": "healthy",
+        "version": "0.1.0"
+    }
 
 
-@api.route("/upload/<filename>", methods=["POST"])
-def post_file(filename):
-    """Upload a file."""
+@app.get("/inputs", response_model=List[str], summary="List uploaded files")
+async def list_input_files() -> List[str]:
+    """List all uploaded input files."""
+    try:
+        files = [
+            f.name for f in UPLOAD_DIRECTORY.iterdir() 
+            if f.is_file() and not f.name.startswith('.')
+        ]
+        return sorted(files)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error listing input files: {str(e)}"
+        )
 
-    if "/" in filename:
-        # Return 400 BAD REQUEST
-        abort(400, "no subdirectories directories allowed")
 
-    with open(os.path.join(UPLOAD_DIRECTORY, filename), "wb") as fp:
-        fp.write(request.data)
+@app.get("/outputs", response_model=List[str], summary="List converted files")
+async def list_output_files() -> List[str]:
+    """List all converted output files."""
+    try:
+        files = [
+            f.name for f in DOWNLOAD_DIRECTORY.iterdir() 
+            if f.is_file() and not f.name.startswith('.')
+        ]
+        return sorted(files)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error listing output files: {str(e)}"
+        )
 
-    # Return 201 CREATED
-    return "", 201
+
+@app.get("/download/{filename}", summary="Download converted file")
+async def download_file(filename: str) -> FileResponse:
+    """Download a converted file."""
+    if "/" in filename or ".." in filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename: no subdirectories allowed"
+        )
+    
+    file_path = DOWNLOAD_DIRECTORY / filename
+    
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File '{filename}' not found"
+        )
+    
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type='application/octet-stream'
+    )
+
+
+@app.post("/convert", summary="Convert uploaded images to grayscale")
+async def convert_images() -> dict:
+    """Convert all uploaded RGB images to grayscale."""
+    try:
+        # Check if there are any input files
+        input_files = list(UPLOAD_DIRECTORY.glob("*"))
+        if not input_files:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No files found to convert. Please upload files first."
+            )
+        
+        # Convert images
+        converted_count = convert_images_to_grayscale(
+            str(UPLOAD_DIRECTORY), 
+            str(DOWNLOAD_DIRECTORY)
+        )
+        
+        return {
+            "message": "Conversion completed successfully",
+            "converted_files": converted_count,
+            "status": "success"
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error during conversion: {str(e)}"
+        )
+
+
+@app.post("/upload", summary="Upload image file")
+async def upload_file(file: UploadFile = File(...)) -> dict:
+    """Upload an image file for processing."""
+    
+    # Validate filename
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No filename provided"
+        )
+    
+    if "/" in file.filename or ".." in file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename: no subdirectories allowed"
+        )
+    
+    # Validate file type (basic check)
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
+    file_ext = Path(file.filename).suffix.lower()
+    
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type. Allowed: {', '.join(allowed_extensions)}"
+        )
+    
+    try:
+        # Save uploaded file
+        file_path = UPLOAD_DIRECTORY / file.filename
+        
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        return {
+            "message": f"File '{file.filename}' uploaded successfully",
+            "filename": file.filename,
+            "size": len(content),
+            "status": "success"
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error uploading file: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
-    api.run(debug=False,host='0.0.0.0', port=5000)
+    import uvicorn
+    uvicorn.run(
+        "api:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )
